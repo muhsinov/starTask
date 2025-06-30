@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-DATABASE_URL = os.getenv("DATABASE_URL") or "postgresql://postgres:umar0111@localhost:5432/star_task    "
+DATABASE_URL = os.getenv("DATABASE_URL") or "postgresql://snownore:umar0111@db:5432/star_db"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
