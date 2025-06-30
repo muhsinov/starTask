@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-DATABASE_URL = os.getenv("DATABASE_URL") or "postgresql://snownore:umar0111@13.60.193.237:5432/star_db"
+DATABASE_URL = os.getenv("DATABASE_URL") or "postgresql://snownore:umar0111@172.17.0.1:5432/star_db"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
