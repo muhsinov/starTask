@@ -37,10 +37,10 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: int = payload.get("sub")
+        user_id: str = payload.get("sub")
         if user_id is None:
             raise credentials_exception
-        token_data = schemas.TokenData(user_id=user_id)
+        token_data = schemas.TokenData(user_id=int(user_id))
     except JWTError:
         raise credentials_exception
     user = db.query(models.User).get(token_data.user_id)
