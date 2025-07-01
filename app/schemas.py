@@ -25,4 +25,13 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     user_id: Optional[int]
-    
+
+class UserRead(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    email: str
+    phone: Optional[str] = None
+
+    class Config:
+        orm_mode = True

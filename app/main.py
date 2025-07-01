@@ -35,6 +35,6 @@ def create_company(company_in: schemas.CompanyCreate, current_user: models.User 
     return crud.create_company(db, company_in, current_user)
 
 # Protected route example
-@app.get("/users/me", response_model=schemas.UserCreate)
+@app.get("/users/me", response_model=schemas.UserRead)
 def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
     return current_user
