@@ -19,6 +19,9 @@ def register(
 ):
     if crud.get_user_by_email(db, user_in.email):
         raise HTTPException(status_code=400, detail="Email already registered")
+    
+    if crud.get_company_by_name(db, user_in.company_name):
+        raise HTTPException(status_code=400, detail="Company already registered")
 
     # 1. Avval foydalanuvchini company_admin sifatida yaratamiz
     user = crud.create_user(db, user_in, role=models.RoleEnum.company_admin)

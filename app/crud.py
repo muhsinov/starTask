@@ -51,6 +51,9 @@ def create_company(db: Session, company: schemas.CompanyCreate, admin_user: mode
     db.refresh(admin_user)
     return db_company
 
+def get_company_by_name(db: Session, name: str):
+    return db.query(models.Company).filter(models.Company.name == name).first()
+
 
 
 def create_user_for_company(db: Session, user_in: schemas.UserCreateByAdmin, company_id: int):
