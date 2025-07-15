@@ -3,10 +3,13 @@ from jose import JWTError, jwt, ExpiredSignatureError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from datetime import timedelta
 from . import crud, models, schemas
 from .database import get_db
 import os
 from dotenv import load_dotenv
+
+REFRESH_TOKEN_EXPIRE_DAYS = 30
 
 load_dotenv()
 
@@ -22,13 +25,34 @@ def authenticate_user(db: Session, email: str, password: str):
         return False
     return user
 
-def create_access_token(data: dict, expires_delta: timedelta = None):
+from datetime import datetime, timedelta
+from jose import jwt
+
+SECRET_KEY = "your_secret_key"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
+
+
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
-    to_encode["sub"] = str(to_encode["sub"])  # sub should always be a string
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+
+    sub = to_encode.get("sub")
+    to_encode["sub"] = str(sub) if sub is not None else sub
+
+    expire_time = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    to_encode["exp"] = expire_time
+
+    token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return token
+
+
+def create_refresh_token(data: dict, expires_delta: timedelta | None = None) -> str:
+    to_encode = data.copy()
+    to_encode["sub"] = str(to_encode["sub"])
+    expire = datetime.utcnow() + (expires_delta or timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
+    to_encode["exp"] = expire
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     try:

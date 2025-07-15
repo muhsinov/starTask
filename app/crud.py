@@ -1,6 +1,11 @@
 from sqlalchemy.orm import Session
 from . import models, schemas
 from passlib.context import CryptContext
+from typing import List
+from sqlalchemy.orm import Session
+from .models import Department, Task, Subtask, Message
+from .schemas import (DepartmentCreate, DepartmentUpdate, TaskCreate, TaskUpdate,
+                      SubtaskCreate, SubtaskUpdate)
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -71,3 +76,96 @@ def create_user_for_company(db: Session, user_in: schemas.UserCreateByAdmin, com
     db.commit()
     db.refresh(db_user)
     return db_user
+
+# Department
+def create_department(db: Session, dept_in: DepartmentCreate) -> Department:
+    dept = Department(
+        name=dept_in.name,
+        description=dept_in.description,
+        manager_id=dept_in.manager_id
+    )
+    db.add(dept)
+    db.commit()
+    db.refresh(dept)
+    return dept
+
+
+def get_departments(db: Session) -> List[Department]:
+    return db.query(Department).all()
+
+
+def update_department(db: Session, dept_id: int, dept_in: DepartmentUpdate) -> Department:
+    dept = db.query(Department).get(dept_id)
+    for key, value in dept_in.dict(exclude_unset=True).items():
+        setattr(dept, key, value)
+    db.commit()
+    db.refresh(dept)
+    return dept
+
+
+def delete_department(db: Session, dept_id: int) -> None:
+    db.query(Department).filter(Department.id == dept_id).delete()
+    db.commit()
+
+# --- Task CRUD ---
+
+def create_task(db: Session, t_in: TaskCreate) -> Task:
+    task = Task(
+        title=t_in.title,
+        description=t_in.description,
+        status=t_in.status,
+        assigned_to_id=t_in.assigned_to,
+        department_id=t_in.department_id
+    )
+    db.add(task)
+    db.commit()
+    db.refresh(task)
+    return task
+
+
+def update_task(db: Session, task_id: int, t_in: TaskUpdate) -> Task:
+    task = db.query(Task).get(task_id)
+    for key, value in t_in.dict(exclude_unset=True).items():
+        setattr(task, key, value)
+    db.commit()
+    db.refresh(task)
+    return task
+
+# --- Subtask CRUD ---
+
+def create_subtask(db: Session, s_in: SubtaskCreate) -> Subtask:
+    sub = Subtask(
+        title=s_in.title,
+        description=s_in.description,
+        status=s_in.status,
+        task_id=s_in.task_id
+    )
+    db.add(sub)
+    db.commit()
+    db.refresh(sub)
+    return sub
+
+
+def update_subtask(db: Session, sub_id: int, s_in: SubtaskUpdate) -> Subtask:
+    sub = db.query(Subtask).get(sub_id)
+    for key, value in s_in.dict(exclude_unset=True).items():
+        setattr(sub, key, value)
+    db.commit()
+    db.refresh(sub)
+    return sub
+
+
+def delete_subtask(db: Session, sub_id: int) -> None:
+    db.query(Subtask).filter(Subtask.id == sub_id).delete()
+    db.commit()
+
+# --- Message CRUD (optional) ---
+def create_message(db: Session, content: str, chat_type, room: str) -> Message:
+    msg = Message(content=content, chat_type=chat_type, room=room)
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+    return msg
+
+def get_department_by_id(db: Session, dept_id: int) -> Department | None:
+    return db.query(Department).filter(Department.id == dept_id).first()
