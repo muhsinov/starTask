@@ -72,3 +72,4 @@ def update(dept_id: int, dept_in: DepartmentUpdate, db: Session = Depends(get_db
 def delete(dept_id: int, db: Session = Depends(get_db)):
     delete_department(db, dept_id)
     return
+
