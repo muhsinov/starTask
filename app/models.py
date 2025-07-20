@@ -92,6 +92,7 @@ class Task(Base):
     assigned_to_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     department_id = Column(Integer, ForeignKey("departments.id"), nullable=False)
     status = Column(Enum(TaskStatusEnum), default=TaskStatusEnum.to_do)
+    deadline = Column(DateTime(timezone=True), nullable=True)
     
     assigned_to = relationship("User", back_populates="tasks")
     department = relationship("Department")

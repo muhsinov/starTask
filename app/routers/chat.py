@@ -10,6 +10,7 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 
 @router.websocket("/private/{room_id}")
 async def ws_private(ws: WebSocket, room_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    await ws.accept()
     await manager.connect_private(ws, room_id)
     try:
         while True:
@@ -22,6 +23,7 @@ async def ws_private(ws: WebSocket, room_id: str, db: Session = Depends(get_db),
 
 @router.websocket("/department/{dept_id}")
 async def ws_dept(ws: WebSocket, dept_id: int, db: Session = Depends(get_db), user=Depends(require_role(RoleEnum.company_admin, RoleEnum.department_manager, RoleEnum.employee))):
+    await ws.accept()
     await manager.connect_dept(ws, dept_id)
     try:
         while True:
@@ -31,3 +33,7 @@ async def ws_dept(ws: WebSocket, dept_id: int, db: Session = Depends(get_db), us
             await manager.broadcast_dept(dept_id, text)
     finally:
         manager.disconnect(ws)
+        
+@router.get("/ws/chat/info", tags=["WebSocket Info"])
+def websocket_info():
+    return {"detail": "See docstring for websocket usage."}

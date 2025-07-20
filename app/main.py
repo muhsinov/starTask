@@ -7,7 +7,7 @@ import app.auth as auth
 from app.database import engine, Base, get_db
 from fastapi.security import OAuth2PasswordRequestForm
 from .models import RoleEnum
-from .auth import create_access_token, create_refresh_token, authenticate_user
+from .auth import create_access_token, create_refresh_token, authenticate_user, get_current_user_from_refresh_token
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI()
@@ -61,25 +61,14 @@ def login_for_access_token(
         "token_type": "bearer"
     }
     
-# Refresh token endpoint
+
 @app.post("/auth/refresh", response_model=schemas.Token)
 def refresh_token(
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(auth.get_current_user)
+    current_user: models.User = Depends(get_current_user_from_refresh_token)
 ):
-    if not current_user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    access_token = create_access_token(data={"sub": current_user.id})
-    refresh_token = create_refresh_token(data={"sub": current_user.id})
-
     return {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
+        "access_token": create_access_token(data={"sub": current_user.id}),
+        "refresh_token": create_refresh_token(data={"sub": current_user.id}),
         "token_type": "bearer"
     }
 
@@ -139,8 +128,9 @@ def list_users(
     ).all()
     return users
 
-from .routers import department, task, chat
+from .routers import department, task, chat, sub_task
 
 app.include_router(department.router)
 app.include_router(task.router)
 app.include_router(chat.router)
+app.include_router(sub_task.router)

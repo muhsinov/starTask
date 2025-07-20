@@ -122,6 +122,11 @@ def create_task(db: Session, t_in: TaskCreate) -> Task:
     db.refresh(task)
     return task
 
+def read_tasks(db: Session, user_id: int, department_id: int) -> List[models.Task]:
+    return db.query(models.Task).filter(
+        models.Task.assigned_to == user_id,
+        models.Task.department_id == department_id
+    ).all()
 
 def update_task(db: Session, task_id: int, t_in: TaskUpdate) -> Task:
     task = db.query(Task).get(task_id)
@@ -131,7 +136,14 @@ def update_task(db: Session, task_id: int, t_in: TaskUpdate) -> Task:
     db.refresh(task)
     return task
 
+def delete_task(db: Session, task_id: int) -> None:
+    db.query(Task).filter(Task.id == task_id).delete()
+    db.commit()
+
 # --- Subtask CRUD ---
+
+def read_subtasks(db: Session, task_id: int) -> List[Subtask]:
+    return db.query(Subtask).filter(Subtask.task_id == task_id).all()
 
 def create_subtask(db: Session, s_in: SubtaskCreate) -> Subtask:
     sub = Subtask(

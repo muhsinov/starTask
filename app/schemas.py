@@ -133,6 +133,7 @@ class TaskCreate(BaseModel):
     status: str = "to_do"
     assigned_to: int
     department_id: int
+    deadline: Optional[str] = None
     
 class TaskRead(BaseModel):
     title: str
@@ -140,6 +141,7 @@ class TaskRead(BaseModel):
     status: str
     assigned_to: UserRead
     department_id: DepartmentRead
+    deadline: Optional[str] = None
     created_at: str
     updated_at: str
     completed_at: Optional[str] = None
@@ -152,6 +154,7 @@ class TaskUpdate(BaseModel):
     status: Optional[str] = None
     assigned_to: Optional[int] = None
     department_id: Optional[int] = None
+    completed_at: Optional[str] = None
     
 class TaskDelete(BaseModel):
     id: int
