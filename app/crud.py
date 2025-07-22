@@ -3,9 +3,8 @@ from . import models, schemas
 from passlib.context import CryptContext
 from typing import List
 from sqlalchemy.orm import Session
-from .models import Department, Task, Subtask, Message
-from .schemas import (DepartmentCreate, DepartmentUpdate, TaskCreate, TaskUpdate,
-                      SubtaskCreate, SubtaskUpdate)
+from .models import Department, Task, Subtask, Message, DepartmentUser
+from .schemas import (DepartmentCreate, DepartmentUpdate, TaskCreate, TaskUpdate, SubtaskCreate, SubtaskUpdate)
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -105,6 +104,30 @@ def update_department(db: Session, dept_id: int, dept_in: DepartmentUpdate) -> D
 
 def delete_department(db: Session, dept_id: int) -> None:
     db.query(Department).filter(Department.id == dept_id).delete()
+    db.commit()
+    
+# --- DepartmentUser CRUD ---
+
+def create_department_user(db: Session, user_id: int, department_id: int) -> None:
+    department_user = DepartmentUser(department_id=department_id,user_id=user_id)
+    db.add(department_user)
+    db.commit()
+    db.refresh(department_user)
+    return department_user
+
+def get_department_users(db: Session, department_id: int) -> List[DepartmentUser]:
+    return db.query(DepartmentUser).filter(DepartmentUser.department_id == department_id).all()
+
+def update_department_user(db: Session, department_user_id: int, du_in: DepartmentUser) -> DepartmentUser:
+    department_user_id = db.query(DepartmentUser).get(department_user_id)
+    for key, value in du_in.dict(exclude_unset=True).items():
+        setattr(department_user_id, key, value)
+    db.commit()
+    db.refresh(department_user_id)
+    return department_user_id
+
+def delete_department_user(db: Session, department_user_id: int) -> None:
+    db.query(DepartmentUser).filter(DepartmentUser.id == department_user_id).delete()
     db.commit()
 
 # --- Task CRUD ---

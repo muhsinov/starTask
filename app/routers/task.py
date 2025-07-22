@@ -14,9 +14,13 @@ def check_task_exists(db: Session, task_id: int):
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
-@router.post("/", response_model=TaskRead, dependencies=[Depends(require_role(RoleEnum.company_admin, RoleEnum.department_manager))])
+@router.post("/", response_model=TaskRead, dependencies=[Depends(require_role(RoleEnum.company_admin))])
 def create(t_in: TaskCreate, user=Depends(get_current_user), db: Session = Depends(get_db)):
+    user = get_current_user()
+    if user.role != RoleEnum.company_admin or user.id != t_in.department.manager_id:
+        raise HTTPException(status_code=403, detail="You can only create tasks for your own department")
     return create_task(db, t_in)
+
 
 @router.put("/{task_id}", response_model=TaskUpdate, dependencies=[Depends(require_role(RoleEnum.company_admin, RoleEnum.department_manager))])
 def update(task_id: int, t_in: TaskUpdate, db: Session = Depends(get_db)):
