@@ -11,16 +11,14 @@ from typing import List
 router = APIRouter(prefix="/department_users", tags=["department_users"])
 
 @router.post("/", response_model=DepartmentUserRead)
-def create(dept_user_in: DepartmentUserCreate, db: Session = Depends(get_db)):
-    user = get_current_user()
+def create(dept_user_in: DepartmentUserCreate, user = Depends(get_current_user), db: Session = Depends(get_db)):
     if user.role != RoleEnum.company_admin or user.id != dept_user_in.department.manager_id:
         raise HTTPException(status_code=403, detail="You can only create department users for your own department")
     return create_department_user(db, dept_user_in.user_id, dept_user_in.department_id)
 
 @router.get("/all/{department_id}", response_model=List[DepartmentUserRead])
-def list_all(department_id: int, db: Session = Depends(get_db)):
-    department = db.query(Department).get(Department.id == department_id, None)
-    user = get_current_user()
+def list_all(department_id: int, user = Depends(get_current_user), db: Session = Depends(get_db)):
+    department = db.query(Department).filter(Department.id == department_id).first()
     if user.role != RoleEnum.company_admin and user.id != department.manager_id or user.department_id != department_id:
         raise HTTPException(status_code=403, detail="You can only view users for your own department")
     if not department:
@@ -28,8 +26,7 @@ def list_all(department_id: int, db: Session = Depends(get_db)):
     return get_department_users(db, department_id)
 
 @router.put("/{dept_user_id}", response_model=DepartmentUserRead)
-def update(dept_user_id: int, dept_user_in: DepartmentUserUpdate, db: Session = Depends(get_db)):
-    user = get_current_user()
+def update(dept_user_id: int, dept_user_in: DepartmentUserUpdate, user = Depends(get_current_user), db: Session = Depends(get_db)):
     if user.role != RoleEnum.company_admin or user.id != dept_user_in.department.manager_id:
         raise HTTPException(status_code=403, detail="You can only update department users for your own department")
     if not db.query(DepartmentUser).get(dept_user_id):
@@ -37,8 +34,7 @@ def update(dept_user_id: int, dept_user_in: DepartmentUserUpdate, db: Session = 
     return update_department_user(db, dept_user_id, dept_user_in)
 
 @router.delete("/{dept_user_id}")
-def delete(dept_user_id: int, db: Session = Depends(get_db)):
-    user = get_current_user()
+def delete(dept_user_id: int, user = Depends(get_current_user), db: Session = Depends(get_db)):
     if not db.query(DepartmentUser).get(dept_user_id):
         raise HTTPException(status_code=404, detail="Department user not found")
     if user.role != RoleEnum.company_admin or user.id != db.query(DepartmentUser).get(dept_user_id).department.manager_id:

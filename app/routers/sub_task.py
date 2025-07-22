@@ -37,7 +37,7 @@ def update(subtask_id: int, subtask_in: SubtaskUpdate, user = Depends(get_curren
 
 @router.delete("/{subtask_id}")
 def delete(subtask_id: int, user = Depends(get_current_user), db: Session = Depends(get_db)):
-    subtask_in = db.query(Subtask).get(Subtask.id == subtask_id, None)
+    subtask_in = db.query(Subtask).filter(Subtask.id == subtask_id).first()
     if user.id != subtask_in.task.department.manager_id or user.role != RoleEnum.company_admin:
         raise HTTPException(status_code=403, detail="You can only delete subtasks for your own tasks")
     if not check_subtask_exists(db, subtask_id):
