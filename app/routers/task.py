@@ -27,11 +27,12 @@ def update(task_id: int, t_in: TaskUpdate, db: Session = Depends(get_db)):
     check_task_exists(db, task_id)
     return update_task(db, task_id, t_in)
 
-@router.get("/", response_model=list[TaskRead])
-def list_all(db: Session = Depends(get_db)):
-    user_id = get_current_user().id
-    department_id = get_current_user().department_id
-    return read_tasks(db, user_id, department_id)
+@router.get("/",  response_model=list[TaskRead])
+def list_all(current_user=Depends(get_current_user), db: Session = Depends(get_db)):
+    user = current_user.id
+    department = current_user.departemt_id
+    print(f"User ID: {user}, Department ID: {department}")
+    return read_tasks(db, user, department)
 
 
 @router.delete("/{task_id}", dependencies=[Depends(require_role(RoleEnum.company_admin, RoleEnum.department_manager))])
