@@ -128,9 +128,10 @@ def list_users(
     ).all()
     return users
 
-from .routers import department, task, chat, sub_task
+from .routers import department, task, chat, sub_task, department_user
 
 app.include_router(department.router)
 app.include_router(task.router)
 app.include_router(chat.router)
 app.include_router(sub_task.router)
+app.include_router(department_user.router)
