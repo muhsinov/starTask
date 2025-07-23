@@ -4,7 +4,7 @@ from passlib.context import CryptContext
 from typing import List
 from sqlalchemy.orm import Session
 from .models import Department, Task, Subtask, Message, DepartmentUser
-from .schemas import (DepartmentCreate, DepartmentUpdate, TaskCreate, TaskUpdate, SubtaskCreate, SubtaskUpdate)
+from .schemas import (DepartmentCreate, DepartmentUpdate, DepartmentUserCreate, TaskCreate, TaskUpdate, SubtaskCreate, SubtaskUpdate)
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -76,7 +76,7 @@ def create_user_for_company(db: Session, user_in: schemas.UserCreateByAdmin, com
     db.refresh(db_user)
     return db_user
 
-# Department
+# ---Department---
 def create_department(db: Session, dept_in: DepartmentCreate) -> Department:
     dept = Department(
         name=dept_in.name,
@@ -108,8 +108,8 @@ def delete_department(db: Session, dept_id: int) -> None:
     
 # --- DepartmentUser CRUD ---
 
-def create_department_user(db: Session, user_id: int, department_id: int) -> None:
-    department_user = DepartmentUser(department_id=department_id,user_id=user_id)
+def create_department_user(db: Session, dept_user_in: DepartmentUserCreate) -> DepartmentUser:
+    department_user = DepartmentUser(department_id=dept_user_in.department_id,user_id=dept_user_in.user_id)
     db.add(department_user)
     db.commit()
     db.refresh(department_user)

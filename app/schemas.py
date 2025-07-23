@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 import enum
+from datetime import datetime
 
 class RoleEnum(str, enum.Enum):
     company_admin = "company_admin"
@@ -95,7 +96,6 @@ class DepartmentRead(BaseModel):
     name: str
     description: Optional[str] = None
     manager_id: Optional[int] = None
-    users: list[UserRead] = []
     class Config:
         from_attributes = True
 
@@ -115,8 +115,10 @@ class DepartmentUserRead(BaseModel):
     id: int
     user_id: int
     department_id: int
-    user: UserRead
-    created_at: str
+    user: Optional[UserRead] = None
+    department: Optional[DepartmentRead] = None
+    created_at: datetime
+    updated_at: datetime
     class Config:
         from_attributes = True
 
