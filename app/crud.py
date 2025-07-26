@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from . import models, schemas
 from passlib.context import CryptContext
 from typing import List
 from sqlalchemy.orm import Session
-from .models import Department, Task, Subtask, Message, DepartmentUser
+from .models import Department, Task, Subtask, Message, DepartmentUser, User
 from .schemas import (DepartmentCreate, DepartmentUpdate, DepartmentUserCreate, TaskCreate, TaskUpdate, SubtaskCreate, SubtaskUpdate)
 
 
@@ -145,10 +146,9 @@ def create_task(db: Session, t_in: TaskCreate) -> Task:
     db.refresh(task)
     return task
 
-def read_tasks(db: Session, user_id: int, department_id: int) -> List[models.Task]:
+def read_tasks(db: Session, department_id: int) -> List[models.Task]:
     return db.query(models.Task).filter(
-        models.Task.assigned_to == user_id,
-        models.Task.department_id == department_id
+            models.Task.department_id == department_id
     ).all()
 
 def update_task(db: Session, task_id: int, t_in: TaskUpdate) -> Task:

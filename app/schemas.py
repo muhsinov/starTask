@@ -138,15 +138,18 @@ class TaskCreate(BaseModel):
     deadline: Optional[str] = None
     
 class TaskRead(BaseModel):
+    id: int
     title: str
     description: Optional[str] = None
     status: str
     assigned_to: UserRead
-    department_id: DepartmentRead
-    deadline: Optional[str] = None
-    created_at: str
-    updated_at: str
-    completed_at: Optional[str] = None
+    department_id: int
+    department: DepartmentRead
+    deadline: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+    completed_at: Optional[datetime] = None
+
     class Config:
         from_attributes = True
 
@@ -154,9 +157,8 @@ class TaskUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     status: Optional[str] = None
-    assigned_to: Optional[int] = None
+    assigned_to_id: Optional[int] = None
     department_id: Optional[int] = None
-    completed_at: Optional[str] = None
     
 class TaskDelete(BaseModel):
     id: int
