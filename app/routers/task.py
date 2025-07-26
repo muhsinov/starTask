@@ -43,6 +43,7 @@ def list_user_tasks(user_id: int, current_user=Depends(get_current_user), db: Se
 
 @router.delete("/{task_id}", dependencies=[Depends(require_role(RoleEnum.company_admin, RoleEnum.department_manager))])
 def delete(task_id: int, db: Session = Depends(get_db)):
-    check_task_exists(db, task_id)
+    if not db.query(Task).filter(Task.id == task_id).first():
+        raise HTTPException(status_code=404, detail="Task not found")
     delete_task(db, task_id)
     return {"detail": "Task deleted successfully"}

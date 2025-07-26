@@ -68,8 +68,10 @@ def update(dept_id: int, dept_in: DepartmentUpdate, db: Session = Depends(get_db
 
 
 
-@router.delete("/{dept_id}", status_code=204, dependencies=[Depends(require_role(RoleEnum.company_admin))])
+@router.delete("/{dept_id}", dependencies=[Depends(require_role(RoleEnum.company_admin))])
 def delete(dept_id: int, db: Session = Depends(get_db)):
+    if not get_department_by_id(db, dept_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Department not found")
     delete_department(db, dept_id)
-    return
+    return {"detail": "Department deleted successfully"}
 
