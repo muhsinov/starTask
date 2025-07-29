@@ -22,8 +22,6 @@ def create(subtask_in: SubtaskCreate, user = Depends(get_current_user), db: Sess
         raise HTTPException(status_code=403, detail="You can only create subtasks for your own tasks")
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-    if not subtask_in.status in ("to_do", "doing", "done"):
-        raise HTTPException(status_code=400, detail="Invalid status. Must be 'to_do', 'doing', or 'done'.")
     return create_subtask(db, subtask_in)
 
 @router.get("/{task_id}", response_model=List[SubtaskRead])

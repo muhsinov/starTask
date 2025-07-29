@@ -136,10 +136,10 @@ def delete_department_user(db: Session, department_user_id: int) -> None:
 def create_task(db: Session, t_in: TaskCreate) -> Task:
     task = Task(
         title=t_in.title,
-        description=t_in.description,
-        status=t_in.status,
-        assigned_to_id=t_in.assigned_to,
-        department_id=t_in.department_id
+        description=t_in.description if t_in.description else None,
+        assigned_to_id=t_in.assigned_to if t_in.assigned_to else None,
+        department_id=t_in.department_id if t_in.department_id else None,
+        deadline=t_in.deadline if t_in.deadline else None,
     )
     db.add(task)
     db.commit()

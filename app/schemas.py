@@ -132,8 +132,7 @@ class DepartmentUserDelete(BaseModel):
 class TaskCreate(BaseModel):
     title: str
     description: Optional[str] = None
-    status: str = "to_do"
-    assigned_to: int
+    assigned_to: Optional[int] = None
     department_id: int
     deadline: Optional[str] = None
     
@@ -142,7 +141,8 @@ class TaskRead(BaseModel):
     title: str
     description: Optional[str] = None
     status: str
-    assigned_to: UserRead
+    assigned_to_id: Optional[int] = None
+    assigned_to: Optional[UserRead] = None
     department_id: int
     department: DepartmentRead
     deadline: Optional[datetime] = None
@@ -166,7 +166,6 @@ class TaskDelete(BaseModel):
 class SubtaskCreate(BaseModel):
     title: str
     description: Optional[str] = None
-    status: str = "to_do"
     task_id: int
 
 
