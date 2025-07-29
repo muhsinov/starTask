@@ -176,9 +176,9 @@ class SubtaskRead(BaseModel):
     description: Optional[str] = None
     status: str
     task_id: int
-    created_at: str
-    updated_at: str
-    completed_at: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+    completed_at: Optional[datetime] = None
     class Config:
         from_attributes = True
 

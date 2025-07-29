@@ -18,12 +18,17 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 def create(t_in: TaskCreate, user=Depends(get_current_user), db: Session = Depends(get_db)):
     if user.role != RoleEnum.company_admin and user.id != t_in.department.manager_id:
         raise HTTPException(status_code=403, detail="You can only create tasks for your own department")
+    if not t_in.status in ("to_do", "doing", "done"):
+        raise HTTPException(status_code=400, detail="Invalid status. Must be 'to_do', 'doing', or 'done'.")
     return create_task(db, t_in)
 
 
 @router.put("/{task_id}", response_model=TaskUpdate, dependencies=[Depends(require_role(RoleEnum.company_admin, RoleEnum.department_manager))])
 def update(task_id: int, t_in: TaskUpdate, db: Session = Depends(get_db)):
-    check_task_exists(db, task_id)
+    if check_task_exists(db, task_id):
+        raise HTTPException(status_code=404, detail="Task not found")
+    if not t_in.status in ("to_do", "doing", "done"):
+        raise HTTPException(status_code=400, detail="Invalid status. Must be 'to_do', 'doing', or 'done'.")
     return update_task(db, task_id, t_in)
 
 @router.get("/department/{department_id}",  response_model=list[TaskRead])

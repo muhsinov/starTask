@@ -4,7 +4,7 @@ from ..schemas import SubtaskCreate, SubtaskRead, SubtaskUpdate
 from app.crud import create_subtask, update_subtask, read_subtasks, delete_subtask
 from ..database import get_db
 from ..utils import require_role
-from ..models import RoleEnum, Subtask
+from ..models import RoleEnum, Subtask, Task
 from ..auth import get_current_user
 from typing import List
 
@@ -17,8 +17,13 @@ router = APIRouter(prefix="/subtasks", tags=["subtasks"])
 
 @router.post("/", response_model=SubtaskRead)
 def create(subtask_in: SubtaskCreate, user = Depends(get_current_user), db: Session = Depends(get_db)):
-    if user.id != subtask_in.task.department.manager_id and user.role != RoleEnum.company_admin:
+    task = db.query(Task).filter(Task.id == subtask_in.task_id).first()
+    if user.id != task.department.manager_id and user.role != RoleEnum.company_admin:
         raise HTTPException(status_code=403, detail="You can only create subtasks for your own tasks")
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if not subtask_in.status in ("to_do", "doing", "done"):
+        raise HTTPException(status_code=400, detail="Invalid status. Must be 'to_do', 'doing', or 'done'.")
     return create_subtask(db, subtask_in)
 
 @router.get("/{task_id}", response_model=List[SubtaskRead])
@@ -29,10 +34,13 @@ def list_all(task_id: int, db: Session = Depends(get_db)):
     
 @router.put("/{subtask_id}", response_model=SubtaskUpdate)
 def update(subtask_id: int, subtask_in: SubtaskUpdate, user = Depends(get_current_user), db: Session = Depends(get_db)):
-    if user.id != subtask_in.task.department.manager_id and user.role != RoleEnum.company_admin:
+    task = db.query(Task).filter(Task.id == subtask_in.task_id).first()
+    if user.id != task.department.manager_id and user.role != RoleEnum.company_admin:
         raise HTTPException(status_code=403, detail="You can only update subtasks for your own tasks")
     if not check_subtask_exists(db, subtask_id):
         raise HTTPException(status_code=404, detail="Subtask not found")
+    if not subtask_in.status in ("to_do", "doing", "done"):
+        raise HTTPException(status_code=400, detail="Invalid status. Must be 'to_do', 'doing', or 'done'.")
     return update_subtask(db, subtask_id, subtask_in)
 
 @router.delete("/{subtask_id}")
@@ -42,4 +50,5 @@ def delete(subtask_id: int, user = Depends(get_current_user), db: Session = Depe
         raise HTTPException(status_code=403, detail="You can only delete subtasks for your own tasks")
     if not check_subtask_exists(db, subtask_id):
         raise HTTPException(status_code=404, detail="Subtask not found")
-    return delete_subtask(db, subtask_id)
+    delete_subtask(db, subtask_id)
+    return {"detail": "SubTask deleted successfully"}
