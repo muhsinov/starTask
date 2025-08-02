@@ -172,7 +172,6 @@ def create_subtask(db: Session, s_in: SubtaskCreate) -> Subtask:
     sub = Subtask(
         title=s_in.title,
         description=s_in.description,
-        status=s_in.status,
         task_id=s_in.task_id
     )
     db.add(sub)

@@ -7,7 +7,7 @@ import app.auth as auth
 from app.database import engine, Base, get_db
 from fastapi.security import OAuth2PasswordRequestForm
 from .models import RoleEnum
-from .auth import create_access_token, create_refresh_token, authenticate_user, get_current_user_from_refresh_token
+from .auth import create_access_token, create_refresh_token, authenticate_user, get_current_user_from_refresh_token, verify_password, get_password_hash
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI()
@@ -107,6 +107,45 @@ def invite_user(user_in: schemas.UserCreateByAdmin,db: Session = Depends(get_db)
 
     new_user = crud.create_user_for_company(db, user_in, company_id)
     return new_user
+
+@app.post("/users/change-password", response_model=schemas.UserRead)
+def change_password(payload: schemas.ChangePasswordRequest, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    if not verify_password(payload.old_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Old password is incorrect"
+        )
+    current_user.hashed_password = get_password_hash(payload.new_password)
+    db.commit()
+
+    return {"message": "Password changed successfully"}
+
+@app.put("/users/me", response_model=schemas.UserRead)
+def update_user(
+    user_update: schemas.UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user),
+):
+    if user_update.email and crud.get_user_by_email(db, user_update.email):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered",
+        )
+    
+    if user_update.phone and crud.get_user_by_phone(db, user_update.phone):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Phone number already registered",
+        )
+
+    for key, value in user_update.dict(exclude_unset=True).items():
+        setattr(current_user, key, value)
+
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
 
 from typing import List
 

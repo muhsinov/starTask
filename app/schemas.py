@@ -38,6 +38,9 @@ class RefreshTokenRequest(BaseModel):
 class TokenData(BaseModel):
     user_id: Optional[int]
 
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str
         
 class UserUpdate(BaseModel):
     first_name: Optional[str] = None
